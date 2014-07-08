@@ -1,0 +1,28 @@
+{
+    "targetName": "DerelictCairo",
+    "workingDirectory": "lib",
+    "version": "~master",
+    "description": "A dynamic binding to the Cairo library.",
+    "authors": [
+        "ousttrue"
+    ],
+    "dependencies": {
+        "derelict-util": ">=1.0.0"
+    },
+    "importPaths": [
+        "source/"
+    ],
+    "license": "Boost",
+    "configurations": [
+        {
+            "targetType": "library",
+            "name": "library"
+        }
+    ],
+    "targetPath": "lib",
+    "homepage": "https://github.com/ousttrue/cairo-ft",
+    "sourcePaths": [
+        "source/"
+    ],
+    "name": "derelict-cairo"
+}
