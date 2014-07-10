@@ -26,6 +26,9 @@
 
  */
 module derelict.cairo.cairo;
+import std.string;
+import std.array;
+import std.algorithm;
 
 
 private {
@@ -73,31 +76,38 @@ enum cairo_font_weight_t {
 }
 
 
-extern( C ) nothrow {
-    alias da_cairo_image_surface_create = cairo_surface_t* function(cairo_format_t, int, int);
-    alias da_cairo_create = cairo_t* function(cairo_surface_t*);
-    alias da_cairo_set_source_rgb = void function(cairo_t*, double, double, double);
-    alias da_cairo_select_font_face = void function(cairo_t*, const char*, cairo_font_slant_t, cairo_font_weight_t);
-    alias da_cairo_set_font_size = void function(cairo_t*, double);
-    alias da_cairo_move_to = void function(cairo_t*, double, double);
-    alias da_cairo_show_text = void function(cairo_t*, const char*);
-    alias da_cairo_surface_write_to_png = void function(cairo_surface_t*, const char*);
-    alias da_cairo_destroy = void function(cairo_t*);
-    alias da_cairo_surface_destroy = void function(cairo_surface_t*);
+private struct Decl{
+    string name;
+    string ret;
+    string args;
+}
+
+
+static immutable auto decls=[
+            Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
+            Decl("cairo_create", "cairo_t*", "cairo_surface_t*"),
+            Decl("cairo_set_source_rgb", "void", "cairo_t*, double, double, double"),
+            Decl("cairo_select_font_face", "void", "cairo_t*, const char*, cairo_font_slant_t, cairo_font_weight_t"),
+            Decl("cairo_set_font_size", "void", "cairo_t*, double"),
+            Decl("cairo_move_to", "void", "cairo_t*, double, double"),
+            Decl("cairo_show_text", "void", "cairo_t*, const char*"),
+            Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
+            Decl("cairo_destroy", "void", "cairo_t*"),
+            Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
+            ];
+
+
+extern( C ) {
+    mixin(decls.map!(d => 
+                format("alias da_%s = %s function(%s) nothrow;", d.name, d.ret, d.args)
+                ).join());
 }
 
 
 __gshared {
-    da_cairo_image_surface_create cairo_image_surface_create;
-    da_cairo_create cairo_create;
-    da_cairo_set_source_rgb cairo_set_source_rgb;
-    da_cairo_select_font_face cairo_select_font_face;
-    da_cairo_set_font_size cairo_set_font_size;
-    da_cairo_move_to cairo_move_to;
-    da_cairo_show_text cairo_show_text;
-    da_cairo_surface_write_to_png cairo_surface_write_to_png;
-    da_cairo_destroy cairo_destroy;
-    da_cairo_surface_destroy cairo_surface_destroy;
+    mixin(decls.map!(d => 
+                format("da_%s %s;", d.name, d.name)
+                ).join());
 }
 
 
@@ -105,18 +115,10 @@ class DerelictCairoLoader : SharedLibLoader {
     public this() {
         super( libNames );
     }
-
     protected override void loadSymbols() {
-        bindFunc(cast(void**)&cairo_image_surface_create, "cairo_image_surface_create");
-        bindFunc(cast(void**)&cairo_create, "cairo_create");
-        bindFunc(cast(void**)&cairo_set_source_rgb, "cairo_set_source_rgb");
-        bindFunc(cast(void**)&cairo_select_font_face, "cairo_select_font_face"); 
-        bindFunc(cast(void**)&cairo_set_font_size, "cairo_set_font_size");
-        bindFunc(cast(void**)&cairo_move_to, "cairo_move_to");
-        bindFunc(cast(void**)&cairo_show_text, "cairo_show_text");
-        bindFunc(cast(void**)&cairo_surface_write_to_png, "cairo_surface_write_to_png");
-        bindFunc(cast(void**)&cairo_destroy, "cairo_destroy");
-        bindFunc(cast(void**)&cairo_surface_destroy, "cairo_surface_destroy");
+        mixin(decls.map!(d => 
+                    format("bindFunc(cast(void**)&%s, \"%s\");", d.name, d.name)
+                    ).join());
     }
 }
 
