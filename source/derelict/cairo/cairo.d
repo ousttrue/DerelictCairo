@@ -130,6 +130,23 @@ enum cairo_text_cluster_flags_t {
 };
 
 
+// raster sources
+alias cairo_surface_t function (cairo_pattern_t *, void *, cairo_surface_t *, const cairo_rectangle_int_t *)
+    cairo_raster_source_acquire_func_t;
+
+alias void function (cairo_pattern_t *, void *, cairo_surface_t *)
+    cairo_raster_source_release_func_t;
+
+alias cairo_status_t function (cairo_pattern_t *, void *) 
+    cairo_raster_source_snapshot_func_t;
+
+alias cairo_status_t function  (cairo_pattern_t *, void *, const cairo_pattern_t *)
+     cairo_raster_source_copy_func_t;
+
+alias void function (cairo_pattern_t *, void *)
+    cairo_raster_source_finish_func_t;
+
+
 // http://cairographics.org/manual/cairo-cairo-t.html
 class cairo_t{}
 enum cairo_antialias_t {
@@ -431,6 +448,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_regions.h"))
         ~ toDecls(import("cairo_transformations.h"))
         ~ toDecls(import("cairo_text.h"))
+        ~ toDecls(import("cairo_raster_sources.h"))
         ;
 }
 
