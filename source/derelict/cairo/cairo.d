@@ -134,6 +134,13 @@ enum cairo_hint_metrics_t {
 };
 
 
+// freetype
+/*
+class FT_Face;
+class FcPattern;
+*/
+
+
 // http://cairographics.org/manual/cairo-text.html
 struct cairo_glyph_t {
     //unsigned int index;
@@ -366,6 +373,22 @@ enum cairo_status_t  {
 };
 
 
+// device
+struct cairo_device_t;
+enum cairo_device_type_t {
+    CAIRO_DEVICE_TYPE_DRM,
+    CAIRO_DEVICE_TYPE_GL,
+    CAIRO_DEVICE_TYPE_SCRIPT,
+    CAIRO_DEVICE_TYPE_XCB,
+    CAIRO_DEVICE_TYPE_XLIB,
+    CAIRO_DEVICE_TYPE_XML,
+    CAIRO_DEVICE_TYPE_COGL,
+    CAIRO_DEVICE_TYPE_WIN32,
+
+    CAIRO_DEVICE_TYPE_INVALID = -1
+};
+
+
 private struct Decl{
     string name;
     string ret;
@@ -481,6 +504,8 @@ Decl[] decls()
         ~ toDecls(import("cairo_font_face.h"))
         ~ toDecls(import("cairo_scaled_font.h"))
         ~ toDecls(import("cairo_font_options.h"))
+        //~ toDecls(import("cairo_freetype_fonts.h"))
+        ~ toDecls(import("cairo_device.h"))
         ;
 }
 
