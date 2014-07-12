@@ -345,6 +345,11 @@ enum cairo_content_t {
 };
 
 
+// cairo png
+alias cairo_status_t function (void *, ubyte *, uint) cairo_read_func_t;
+alias cairo_status_t function (void *, const ubyte *, uint) cairo_write_func_t;
+
+
 // transforms
 struct cairo_matrix_t
 {
@@ -497,10 +502,6 @@ Decl[] toDecls(string src)
 
 Decl[] decls()
 {
-    Decl[] decls_manual=[
-            Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
-            ];
-
     /*
     string debug_str="";
     foreach(Decl d; cairo_t_delcs)
@@ -517,8 +518,7 @@ Decl[] decls()
     */
 
     return 
-        decls_manual
-        ~ toDecls(import("cairo_t.h"))
+        toDecls(import("cairo_t.h"))
         ~ toDecls(import("cairo_path.h"))
         ~ toDecls(import("cairo_pattern.h"))
         ~ toDecls(import("cairo_regions.h"))
@@ -532,6 +532,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_device.h"))
         ~ toDecls(import("cairo_surface.h"))
         ~ toDecls(import("cairo_image_surface.h"))
+        ~ toDecls(import("cairo_png_support.h"))
         ;
 }
 
