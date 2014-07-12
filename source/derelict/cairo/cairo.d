@@ -203,6 +203,19 @@ enum cairo_pattern_type_t {
 };
 
 
+// http://www.cairographics.org/manual/cairo-Regions.html
+class cairo_region_t{}
+struct cairo_rectangle_int_t {
+    int x, y;
+    int width, height;
+};
+enum  cairo_region_overlap_t {
+    CAIRO_REGION_OVERLAP_IN,		/* completely inside region */
+    CAIRO_REGION_OVERLAP_OUT,		/* completely outside region */
+    CAIRO_REGION_OVERLAP_PART		/* partly inside region */
+};
+
+
 // http://cairographics.org/manual/cairo-cairo-surface-t.html
 class cairo_surface_t{}
 
@@ -694,10 +707,57 @@ void *              cairo_pattern_get_user_data         (cairo_pattern_t *patter
                                                          const cairo_user_data_key_t *key);
     ";
 
+    // http://www.cairographics.org/manual/cairo-Regions.html
+    auto cairo_regions_src="
+typedef             cairo_region_t;
+cairo_region_t *    cairo_region_create                 (void);
+cairo_region_t *    cairo_region_create_rectangle       (const cairo_rectangle_int_t *rectangle);
+cairo_region_t *    cairo_region_create_rectangles      (const cairo_rectangle_int_t *rects,
+                                                         int count);
+cairo_region_t *    cairo_region_copy                   (const cairo_region_t *original);
+cairo_region_t *    cairo_region_reference              (cairo_region_t *region);
+void                cairo_region_destroy                (cairo_region_t *region);
+cairo_status_t      cairo_region_status                 (const cairo_region_t *region);
+void                cairo_region_get_extents            (const cairo_region_t *region,
+                                                         cairo_rectangle_int_t *extents);
+int                 cairo_region_num_rectangles         (const cairo_region_t *region);
+void                cairo_region_get_rectangle          (const cairo_region_t *region,
+                                                         int nth,
+                                                         cairo_rectangle_int_t *rectangle);
+cairo_bool_t        cairo_region_is_empty               (const cairo_region_t *region);
+cairo_bool_t        cairo_region_contains_point         (const cairo_region_t *region,
+                                                         int x,
+                                                         int y);
+enum                cairo_region_overlap_t;
+cairo_region_overlap_t cairo_region_contains_rectangle  (const cairo_region_t *region,
+                                                         const cairo_rectangle_int_t *rectangle);
+cairo_bool_t        cairo_region_equal                  (const cairo_region_t *a,
+                                                         const cairo_region_t *b);
+void                cairo_region_translate              (cairo_region_t *region,
+                                                         int dx,
+                                                         int dy);
+cairo_status_t      cairo_region_intersect              (cairo_region_t *dst,
+                                                         const cairo_region_t *other);
+cairo_status_t      cairo_region_intersect_rectangle    (cairo_region_t *dst,
+                                                         const cairo_rectangle_int_t *rectangle);
+cairo_status_t      cairo_region_subtract               (cairo_region_t *dst,
+                                                         const cairo_region_t *other);
+cairo_status_t      cairo_region_subtract_rectangle     (cairo_region_t *dst,
+                                                         const cairo_rectangle_int_t *rectangle);
+cairo_status_t      cairo_region_union                  (cairo_region_t *dst,
+                                                         const cairo_region_t *other);
+cairo_status_t      cairo_region_union_rectangle        (cairo_region_t *dst,
+                                                         const cairo_rectangle_int_t *rectangle);
+cairo_status_t      cairo_region_xor                    (cairo_region_t *dst,
+                                                         const cairo_region_t *other);
+cairo_status_t      cairo_region_xor_rectangle          (cairo_region_t *dst,
+                                                         const cairo_rectangle_int_t *rectangle);
+    ";
 
     auto cairo_t_delcs=toDecls(cairo_t_src);
     auto cairo_path_decls=toDecls(cairo_path_src);
     auto cairo_pattern_decls=toDecls(cairo_pattern_src);
+    auto cairo_regions_decls=toDecls(cairo_regions_src);
 
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
@@ -724,6 +784,7 @@ void *              cairo_pattern_get_user_data         (cairo_pattern_t *patter
     return cairo_t_delcs 
         ~ cairo_path_decls 
         ~ cairo_pattern_decls
+        ~ cairo_regions_decls
         ~ decls_manual;
 }
 
