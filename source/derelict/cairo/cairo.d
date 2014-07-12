@@ -81,8 +81,15 @@ union cairo_path_data_t {
 };
 
 
-// font
+// font face
 class cairo_font_face_t{}
+enum cairo_font_type_t {
+    CAIRO_FONT_TYPE_TOY,
+    CAIRO_FONT_TYPE_FT,
+    CAIRO_FONT_TYPE_WIN32,
+    CAIRO_FONT_TYPE_QUARTZ,
+    CAIRO_FONT_TYPE_USER
+};
 
 
 // scaled font
@@ -449,6 +456,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_transformations.h"))
         ~ toDecls(import("cairo_text.h"))
         ~ toDecls(import("cairo_raster_sources.h"))
+        ~ toDecls(import("cairo_font_face.h"))
         ;
 }
 
