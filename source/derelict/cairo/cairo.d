@@ -49,6 +49,14 @@ private {
 }
 
 
+// http://cairographics.org/manual/cairo-Types.html
+alias int cairo_bool_t;
+struct cairo_user_data_key_t {
+    int unused;
+};
+alias void function (void *) cairo_destroy_func_t;
+
+
 // http://cairographics.org/manual/cairo-cairo-t.html
 class cairo_t{}
 enum cairo_antialias_t {
@@ -112,6 +120,16 @@ enum cairo_operator_t {
     CAIRO_OPERATOR_HSL_SATURATION,
     CAIRO_OPERATOR_HSL_COLOR,
     CAIRO_OPERATOR_HSL_LUMINOSITY
+};
+struct cairo_rectangle_t
+{
+    double x, y, width, height;
+};
+struct cairo_rectangle_list_t
+{
+    cairo_status_t     status;
+    cairo_rectangle_t *rectangles;
+    int                num_rectangles;
 };
 
 
@@ -373,7 +391,7 @@ cairo_bool_t        cairo_in_stroke                     (cairo_t *cr,
                                                          double y);
 void                cairo_copy_page                     (cairo_t *cr);
 void                cairo_show_page                     (cairo_t *cr);
-unsigned int        cairo_get_reference_count           (cairo_t *cr);
+uint        cairo_get_reference_count           (cairo_t *cr);
 cairo_status_t      cairo_set_user_data                 (cairo_t *cr,
                                                          const cairo_user_data_key_t *key,
                                                          void *user_data,
@@ -403,8 +421,12 @@ void *              cairo_get_user_data                 (cairo_t *cr,
                 //format("alias da_%s = %s function(%s) nothrow;", d.name, d.ret, d.args);
     }
     //assert(0, debug_str);
+    {
+        auto d=decls[57];
+        //assert(0, format("#[%s][%s][%s]\n", d.name, d.ret, d.args));
+    }
 
-    return decls[0..15] ~ decls_manual;
+    return decls ~ decls_manual;
 }
 
 
