@@ -178,6 +178,28 @@ enum cairo_format_t {
 
 // http://cairographics.org/manual/cairo-cairo-pattern-t.html
 class cairo_pattern_t{}
+enum cairo_extend_t {
+    CAIRO_EXTEND_NONE,
+    CAIRO_EXTEND_REPEAT,
+    CAIRO_EXTEND_REFLECT,
+    CAIRO_EXTEND_PAD
+};
+enum cairo_filter_t {
+    CAIRO_FILTER_FAST,
+    CAIRO_FILTER_GOOD,
+    CAIRO_FILTER_BEST,
+    CAIRO_FILTER_NEAREST,
+    CAIRO_FILTER_BILINEAR,
+    CAIRO_FILTER_GAUSSIAN
+};
+enum cairo_pattern_type_t {
+    CAIRO_PATTERN_TYPE_SOLID,
+    CAIRO_PATTERN_TYPE_SURFACE,
+    CAIRO_PATTERN_TYPE_LINEAR,
+    CAIRO_PATTERN_TYPE_RADIAL,
+    CAIRO_PATTERN_TYPE_MESH,
+    CAIRO_PATTERN_TYPE_RASTER_SOURCE
+};
 
 
 // http://cairographics.org/manual/cairo-cairo-surface-t.html
@@ -201,6 +223,13 @@ enum cairo_font_weight_t {
     CAIRO_FONT_WEIGHT_NORMAL,
     CAIRO_FONT_WEIGHT_BOLD
 }
+
+struct cairo_matrix_t
+{
+    double xx; double yx;
+    double xy; double yy;
+    double x0; double y0;
+};
 
 
 // http://cairographics.org/manual/cairo-Error-handling.html
@@ -275,7 +304,7 @@ Decl toDecl(string src)
 {
     auto open=src.indexOf('(');
     auto close=src.lastIndexOf(')');
-    auto args=src[open+1..close];
+    auto args=src[open+1..close].strip();
 
     auto return_name=src[0..open];
     return_name=return_name.stripRight();
@@ -284,9 +313,14 @@ Decl toDecl(string src)
     auto ret=return_name[0..name_begin].strip();
 
 
-    return Decl(name, ret
-            , args.ctSplit(',').map!(arg => remove_a_symbol(arg)).join(",")
-            );
+    if(args=="" || args=="void"){
+        return Decl(name, ret, "");
+    }
+    else{
+        return Decl(name, ret
+                , args.ctSplit(',').map!(arg => remove_a_symbol(arg)).join(",")
+                );
+    }
 }
 
 
@@ -504,10 +538,150 @@ void                cairo_path_extents                  (cairo_t *cr,
                                                          double *y2);
 ";
 
+    string cairo_pattern_src="
+typedef             cairo_pattern_t;
+void                cairo_pattern_add_color_stop_rgb    (cairo_pattern_t *pattern,
+                                                         double offset,
+                                                         double red,
+                                                         double green,
+                                                         double blue);
+void                cairo_pattern_add_color_stop_rgba   (cairo_pattern_t *pattern,
+                                                         double offset,
+                                                         double red,
+                                                         double green,
+                                                         double blue,
+                                                         double alpha);
+cairo_status_t      cairo_pattern_get_color_stop_count  (cairo_pattern_t *pattern,
+                                                         int *count);
+cairo_status_t      cairo_pattern_get_color_stop_rgba   (cairo_pattern_t *pattern,
+                                                         int index,
+                                                         double *offset,
+                                                         double *red,
+                                                         double *green,
+                                                         double *blue,
+                                                         double *alpha);
+cairo_pattern_t *   cairo_pattern_create_rgb            (double red,
+                                                         double green,
+                                                         double blue);
+cairo_pattern_t *   cairo_pattern_create_rgba           (double red,
+                                                         double green,
+                                                         double blue,
+                                                         double alpha);
+cairo_status_t      cairo_pattern_get_rgba              (cairo_pattern_t *pattern,
+                                                         double *red,
+                                                         double *green,
+                                                         double *blue,
+                                                         double *alpha);
+cairo_pattern_t *   cairo_pattern_create_for_surface    (cairo_surface_t *surface);
+cairo_status_t      cairo_pattern_get_surface           (cairo_pattern_t *pattern,
+                                                         cairo_surface_t **surface);
+cairo_pattern_t *   cairo_pattern_create_linear         (double x0,
+                                                         double y0,
+                                                         double x1,
+                                                         double y1);
+cairo_status_t      cairo_pattern_get_linear_points     (cairo_pattern_t *pattern,
+                                                         double *x0,
+                                                         double *y0,
+                                                         double *x1,
+                                                         double *y1);
+cairo_pattern_t *   cairo_pattern_create_radial         (double cx0,
+                                                         double cy0,
+                                                         double radius0,
+                                                         double cx1,
+                                                         double cy1,
+                                                         double radius1);
+cairo_status_t      cairo_pattern_get_radial_circles    (cairo_pattern_t *pattern,
+                                                         double *x0,
+                                                         double *y0,
+                                                         double *r0,
+                                                         double *x1,
+                                                         double *y1,
+                                                         double *r1);
+cairo_pattern_t *   cairo_pattern_create_mesh           (void);
+void                cairo_mesh_pattern_begin_patch      (cairo_pattern_t *pattern);
+void                cairo_mesh_pattern_end_patch        (cairo_pattern_t *pattern);
+void                cairo_mesh_pattern_move_to          (cairo_pattern_t *pattern,
+                                                         double x,
+                                                         double y);
+void                cairo_mesh_pattern_line_to          (cairo_pattern_t *pattern,
+                                                         double x,
+                                                         double y);
+void                cairo_mesh_pattern_curve_to         (cairo_pattern_t *pattern,
+                                                         double x1,
+                                                         double y1,
+                                                         double x2,
+                                                         double y2,
+                                                         double x3,
+                                                         double y3);
+void                cairo_mesh_pattern_set_control_point
+                                                        (cairo_pattern_t *pattern,
+                                                         uint point_num,
+                                                         double x,
+                                                         double y);
+void                cairo_mesh_pattern_set_corner_color_rgb
+                                                        (cairo_pattern_t *pattern,
+                                                         uint corner_num,
+                                                         double red,
+                                                         double green,
+                                                         double blue);
+void                cairo_mesh_pattern_set_corner_color_rgba
+                                                        (cairo_pattern_t *pattern,
+                                                         uint corner_num,
+                                                         double red,
+                                                         double green,
+                                                         double blue,
+                                                         double alpha);
+cairo_status_t      cairo_mesh_pattern_get_patch_count  (cairo_pattern_t *pattern,
+                                                         uint *count);
+cairo_path_t *      cairo_mesh_pattern_get_path         (cairo_pattern_t *pattern,
+                                                         uint patch_num);
+cairo_status_t      cairo_mesh_pattern_get_control_point
+                                                        (cairo_pattern_t *pattern,
+                                                         uint patch_num,
+                                                         uint point_num,
+                                                         double *x,
+                                                         double *y);
+cairo_status_t      cairo_mesh_pattern_get_corner_color_rgba
+                                                        (cairo_pattern_t *pattern,
+                                                         uint patch_num,
+                                                         uint corner_num,
+                                                         double *red,
+                                                         double *green,
+                                                         double *blue,
+                                                         double *alpha);
+cairo_pattern_t *   cairo_pattern_reference             (cairo_pattern_t *pattern);
+void                cairo_pattern_destroy               (cairo_pattern_t *pattern);
+cairo_status_t      cairo_pattern_status                (cairo_pattern_t *pattern);
+enum                cairo_extend_t;
+void                cairo_pattern_set_extend            (cairo_pattern_t *pattern,
+                                                         cairo_extend_t extend);
+cairo_extend_t      cairo_pattern_get_extend            (cairo_pattern_t *pattern);
+enum                cairo_filter_t;
+void                cairo_pattern_set_filter            (cairo_pattern_t *pattern,
+                                                         cairo_filter_t filter);
+cairo_filter_t      cairo_pattern_get_filter            (cairo_pattern_t *pattern);
+void                cairo_pattern_set_matrix            (cairo_pattern_t *pattern,
+                                                         const cairo_matrix_t *matrix);
+void                cairo_pattern_get_matrix            (cairo_pattern_t *pattern,
+                                                         cairo_matrix_t *matrix);
+enum                cairo_pattern_type_t;
+cairo_pattern_type_t cairo_pattern_get_type             (cairo_pattern_t *pattern);
+uint        cairo_pattern_get_reference_count   (cairo_pattern_t *pattern);
+cairo_status_t      cairo_pattern_set_user_data         (cairo_pattern_t *pattern,
+                                                         const cairo_user_data_key_t *key,
+                                                         void *user_data,
+                                                         cairo_destroy_func_t destroy);
+void *              cairo_pattern_get_user_data         (cairo_pattern_t *pattern,
+                                                         const cairo_user_data_key_t *key);
+    ";
+
     Decl[] cairo_t_delcs=cairo_t_src.ctSplit(';').filter!(
             s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
 
     Decl[] cairo_path_decls=cairo_path_src.ctSplit(';').filter!(
+            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
+
+    Decl[] cairo_pattern_decls=cairo_pattern_src.ctSplit(';').filter!(
             s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
 
     Decl[] decls_manual=[
@@ -528,11 +702,14 @@ void                cairo_path_extents                  (cairo_t *cr,
     }
     //assert(0, debug_str);
     {
-        auto d=cairo_path_decls[1];
+        auto d=cairo_pattern_decls[19];
         //assert(0, format("#[%s][%s][%s]\n", d.name, d.ret, d.args));
     }
 
-    return cairo_t_delcs ~ cairo_path_decls ~ decls_manual;
+    return cairo_t_delcs 
+        ~ cairo_path_decls 
+        ~ cairo_pattern_decls
+        ~ decls_manual;
 }
 
 
