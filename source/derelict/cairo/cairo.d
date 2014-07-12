@@ -457,6 +457,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_text.h"))
         ~ toDecls(import("cairo_raster_sources.h"))
         ~ toDecls(import("cairo_font_face.h"))
+        ~ toDecls(import("cairo_scaled_font.h"))
         ;
 }
 
