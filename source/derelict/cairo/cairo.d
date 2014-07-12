@@ -754,10 +754,36 @@ cairo_status_t      cairo_region_xor_rectangle          (cairo_region_t *dst,
                                                          const cairo_rectangle_int_t *rectangle);
     ";
 
-    auto cairo_t_delcs=toDecls(cairo_t_src);
-    auto cairo_path_decls=toDecls(cairo_path_src);
-    auto cairo_pattern_decls=toDecls(cairo_pattern_src);
-    auto cairo_regions_decls=toDecls(cairo_regions_src);
+    // http://www.cairographics.org/manual/cairo-Transformations.html
+    auto cairo_transformations_src="
+void                cairo_translate                     (cairo_t *cr,
+                                                         double tx,
+                                                         double ty);
+void                cairo_scale                         (cairo_t *cr,
+                                                         double sx,
+                                                         double sy);
+void                cairo_rotate                        (cairo_t *cr,
+                                                         double angle);
+void                cairo_transform                     (cairo_t *cr,
+                                                         const cairo_matrix_t *matrix);
+void                cairo_set_matrix                    (cairo_t *cr,
+                                                         const cairo_matrix_t *matrix);
+void                cairo_get_matrix                    (cairo_t *cr,
+                                                         cairo_matrix_t *matrix);
+void                cairo_identity_matrix               (cairo_t *cr);
+void                cairo_user_to_device                (cairo_t *cr,
+                                                         double *x,
+                                                         double *y);
+void                cairo_user_to_device_distance       (cairo_t *cr,
+                                                         double *dx,
+                                                         double *dy);
+void                cairo_device_to_user                (cairo_t *cr,
+                                                         double *x,
+                                                         double *y);
+void                cairo_device_to_user_distance       (cairo_t *cr,
+                                                         double *dx,
+                                                         double *dy);
+        ";
 
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
@@ -768,6 +794,7 @@ cairo_status_t      cairo_region_xor_rectangle          (cairo_region_t *dst,
             Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
             ];
 
+    /*
     string debug_str="";
     foreach(Decl d; cairo_t_delcs)
     {
@@ -780,12 +807,16 @@ cairo_status_t      cairo_region_xor_rectangle          (cairo_region_t *dst,
         auto d=cairo_pattern_decls[19];
         //assert(0, format("#[%s][%s][%s]\n", d.name, d.ret, d.args));
     }
+    */
 
-    return cairo_t_delcs 
-        ~ cairo_path_decls 
-        ~ cairo_pattern_decls
-        ~ cairo_regions_decls
-        ~ decls_manual;
+    return 
+        decls_manual
+        ~ toDecls(cairo_t_src)
+        ~ toDecls(cairo_path_src)
+        ~ toDecls(cairo_pattern_src)
+        ~ toDecls(cairo_regions_src)
+        ~ toDecls(cairo_transformations_src)
+        ;
 }
 
 
