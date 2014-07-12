@@ -57,6 +57,38 @@ struct cairo_user_data_key_t {
 alias void function (void *) cairo_destroy_func_t;
 
 
+// http://cairographics.org/manual/cairo-Paths.html
+struct cairo_path_t {
+    cairo_status_t status;
+    cairo_path_data_t *data;
+    int num_data;
+};
+enum cairo_path_data_type_t {
+    CAIRO_PATH_MOVE_TO,
+    CAIRO_PATH_LINE_TO,
+    CAIRO_PATH_CURVE_TO,
+    CAIRO_PATH_CLOSE_PATH
+};
+union cairo_path_data_t {
+    struct header {
+        cairo_path_data_type_t type;
+        int length;
+    };
+    struct point {
+        double x, y;
+    };
+};
+
+
+// http://cairographics.org/manual/cairo-text.html
+struct cairo_glyph_t {
+    //unsigned int index;
+    ulong        index;
+    double               x;
+    double               y;
+};
+
+
 // http://cairographics.org/manual/cairo-cairo-t.html
 class cairo_t{}
 enum cairo_antialias_t {
@@ -400,21 +432,95 @@ void *              cairo_get_user_data                 (cairo_t *cr,
                                                          const cairo_user_data_key_t *key);
 ";
 
-    Decl[] decls=cairo_t_src.ctSplit(';').filter!(
+    // http://cairographics.org/manual/cairo-Paths.html
+    string cairo_path_src="
+                    cairo_path_t;
+union               cairo_path_data_t;
+enum                cairo_path_data_type_t;
+cairo_path_t *      cairo_copy_path                     (cairo_t *cr);
+cairo_path_t *      cairo_copy_path_flat                (cairo_t *cr);
+void                cairo_path_destroy                  (cairo_path_t *path);
+void                cairo_append_path                   (cairo_t *cr,
+                                                         const cairo_path_t *path);
+cairo_bool_t        cairo_has_current_point             (cairo_t *cr);
+void                cairo_get_current_point             (cairo_t *cr,
+                                                         double *x,
+                                                         double *y);
+void                cairo_new_path                      (cairo_t *cr);
+void                cairo_new_sub_path                  (cairo_t *cr);
+void                cairo_close_path                    (cairo_t *cr);
+void                cairo_arc                           (cairo_t *cr,
+                                                         double xc,
+                                                         double yc,
+                                                         double radius,
+                                                         double angle1,
+                                                         double angle2);
+void                cairo_arc_negative                  (cairo_t *cr,
+                                                         double xc,
+                                                         double yc,
+                                                         double radius,
+                                                         double angle1,
+                                                         double angle2);
+void                cairo_curve_to                      (cairo_t *cr,
+                                                         double x1,
+                                                         double y1,
+                                                         double x2,
+                                                         double y2,
+                                                         double x3,
+                                                         double y3);
+void                cairo_line_to                       (cairo_t *cr,
+                                                         double x,
+                                                         double y);
+void                cairo_move_to                       (cairo_t *cr,
+                                                         double x,
+                                                         double y);
+void                cairo_rectangle                     (cairo_t *cr,
+                                                         double x,
+                                                         double y,
+                                                         double width,
+                                                         double height);
+void                cairo_glyph_path                    (cairo_t *cr,
+                                                         const cairo_glyph_t *glyphs,
+                                                         int num_glyphs);
+void                cairo_text_path                     (cairo_t *cr,
+                                                         const char *utf8);
+void                cairo_rel_curve_to                  (cairo_t *cr,
+                                                         double dx1,
+                                                         double dy1,
+                                                         double dx2,
+                                                         double dy2,
+                                                         double dx3,
+                                                         double dy3);
+void                cairo_rel_line_to                   (cairo_t *cr,
+                                                         double dx,
+                                                         double dy);
+void                cairo_rel_move_to                   (cairo_t *cr,
+                                                         double dx,
+                                                         double dy);
+void                cairo_path_extents                  (cairo_t *cr,
+                                                         double *x1,
+                                                         double *y1,
+                                                         double *x2,
+                                                         double *y2);
+";
+
+    Decl[] cairo_t_delcs=cairo_t_src.ctSplit(';').filter!(
+            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
+
+    Decl[] cairo_path_decls=cairo_path_src.ctSplit(';').filter!(
             s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
 
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
             Decl("cairo_select_font_face", "void", "cairo_t*, const char*, cairo_font_slant_t, cairo_font_weight_t"),
             Decl("cairo_set_font_size", "void", "cairo_t*, double"),
-            Decl("cairo_move_to", "void", "cairo_t*, double, double"),
             Decl("cairo_show_text", "void", "cairo_t*, const char*"),
             Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
             Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
             ];
 
     string debug_str="";
-    foreach(Decl d; decls)
+    foreach(Decl d; cairo_t_delcs)
     {
         debug_str ~= 
                 format("#[%s][%s][%s]\n", d.name, d.ret, d.args);
@@ -422,11 +528,11 @@ void *              cairo_get_user_data                 (cairo_t *cr,
     }
     //assert(0, debug_str);
     {
-        auto d=decls[57];
+        auto d=cairo_path_decls[1];
         //assert(0, format("#[%s][%s][%s]\n", d.name, d.ret, d.args));
     }
 
-    return decls ~ decls_manual;
+    return cairo_t_delcs ~ cairo_path_decls ~ decls_manual;
 }
 
 
