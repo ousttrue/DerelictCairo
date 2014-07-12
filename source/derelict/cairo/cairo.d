@@ -350,13 +350,14 @@ alias cairo_status_t function (void *, ubyte *, uint) cairo_read_func_t;
 alias cairo_status_t function (void *, const ubyte *, uint) cairo_write_func_t;
 
 
-// transforms
+// http://cairographics.org/manual/cairo-cairo-matrix-t.html
 struct cairo_matrix_t
 {
     double xx; double yx;
     double xy; double yy;
     double x0; double y0;
 };
+
 
 // http://cairographics.org/manual/cairo-Error-handling.html
 enum cairo_status_t  {
@@ -533,6 +534,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_surface.h"))
         ~ toDecls(import("cairo_image_surface.h"))
         ~ toDecls(import("cairo_png_support.h"))
+        ~ toDecls(import("cairo_matrix.h"))
         ;
 }
 
