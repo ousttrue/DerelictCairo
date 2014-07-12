@@ -81,12 +81,52 @@ union cairo_path_data_t {
 };
 
 
+// font
+class cairo_font_face_t{}
+
+
+// scaled font
+class cairo_scaled_font_t{}
+struct cairo_font_extents_t {
+    double ascent;
+    double descent;
+    double height;
+    double max_x_advance;
+    double max_y_advance;
+};
+struct cairo_text_extents_t {
+    double x_bearing;
+    double y_bearing;
+    double width;
+    double height;
+    double x_advance;
+    double y_advance;
+};
+
+
 // http://cairographics.org/manual/cairo-text.html
+class cairo_font_options_t{}
 struct cairo_glyph_t {
     //unsigned int index;
     ulong        index;
     double               x;
     double               y;
+};
+enum cairo_font_slant_t {
+    CAIRO_FONT_SLANT_NORMAL,
+    CAIRO_FONT_SLANT_ITALIC,
+    CAIRO_FONT_SLANT_OBLIQUE
+}
+enum cairo_font_weight_t {
+    CAIRO_FONT_WEIGHT_NORMAL,
+    CAIRO_FONT_WEIGHT_BOLD
+}
+struct cairo_text_cluster_t {
+    int        num_bytes;
+    int        num_glyphs;
+};
+enum cairo_text_cluster_flags_t {
+    CAIRO_TEXT_CLUSTER_FLAG_BACKWARD = 0x00000001
 };
 
 
@@ -203,7 +243,7 @@ enum cairo_pattern_type_t {
 };
 
 
-// http://www.cairographics.org/manual/cairo-Regions.html
+// http://cairographics.org/manual/cairo-Regions.html
 class cairo_region_t{}
 struct cairo_rectangle_int_t {
     int x, y;
@@ -226,18 +266,7 @@ enum cairo_content_t {
 };
 
 
-enum cairo_font_slant_t {
-    CAIRO_FONT_SLANT_NORMAL,
-    CAIRO_FONT_SLANT_ITALIC,
-    CAIRO_FONT_SLANT_OBLIQUE
-}
-
-
-enum cairo_font_weight_t {
-    CAIRO_FONT_WEIGHT_NORMAL,
-    CAIRO_FONT_WEIGHT_BOLD
-}
-
+// transforms
 struct cairo_matrix_t
 {
     double xx; double yx;
@@ -375,9 +404,6 @@ Decl[] decls()
 {
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
-            Decl("cairo_select_font_face", "void", "cairo_t*, const char*, cairo_font_slant_t, cairo_font_weight_t"),
-            Decl("cairo_set_font_size", "void", "cairo_t*, double"),
-            Decl("cairo_show_text", "void", "cairo_t*, const char*"),
             Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
             Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
             ];
@@ -404,6 +430,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_pattern.h"))
         ~ toDecls(import("cairo_regions.h"))
         ~ toDecls(import("cairo_transformations.h"))
+        ~ toDecls(import("cairo_text.h"))
         ;
 }
 
