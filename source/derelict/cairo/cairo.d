@@ -220,27 +220,6 @@ string remove_a_symbol(string arg)
     return arg;
 }
 
-string remove_symbol(string args)
-{
-    if(args.strip()==""){
-        return "";
-    }
-
-    string[] splited=[];
-    while(true)
-    {
-        auto index=args.indexOf(",");
-        if(index==-1){
-            splited~=remove_a_symbol(args);
-            break;
-        }
-        splited~=remove_a_symbol(args[0..index]);
-        args=args[index+1..$].strip();
-    }
-    auto removed=splited.join(", ");
-    return removed;
-}
-
 
 Decl toDecl(string src)
 {
@@ -254,13 +233,32 @@ Decl toDecl(string src)
     auto name=return_name[name_begin+1..$];
     auto ret=return_name[0..name_begin].strip();
 
-    return Decl(name, ret, remove_symbol(args));
+
+    return Decl(name, ret
+            , args.ctSplit(',').map!(arg => remove_a_symbol(arg)).join(",")
+            );
+}
+
+
+string[] ctSplit(string src, char delimiter)
+{
+    string[] splited=[];
+    while(true){
+        auto index=src.indexOf(delimiter);
+        if(index==-1){
+            splited~=src;
+            break;
+        }
+        splited~=src[0 .. index];
+        src=src[index+1 .. $];
+    }
+    return splited;
 }
 
 
 Decl[] decls()
 {
-    // from http://cairographics.org/manual/cairo-cairo-t.html
+    // http://cairographics.org/manual/cairo-cairo-t.html
     string cairo_t_src="
 typedef             cairo_t;
 cairo_t *           cairo_create                        (cairo_surface_t *target);
@@ -384,19 +382,8 @@ void *              cairo_get_user_data                 (cairo_t *cr,
                                                          const cairo_user_data_key_t *key);
 ";
 
-    Decl[] decls=[];
-    while(true)
-    {
-        auto index=cairo_t_src.indexOf(';');
-        if(index==-1){
-            break;
-        }
-        auto decl=cairo_t_src[0 .. index];
-        if(decl.indexOf('(')!=-1){
-            decls ~= toDecl(decl);
-        }
-        cairo_t_src=cairo_t_src[index+1 .. $].strip();
-    }
+    Decl[] decls=cairo_t_src.ctSplit(';').filter!(
+            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
 
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
@@ -408,16 +395,14 @@ void *              cairo_get_user_data                 (cairo_t *cr,
             Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
             ];
 
-    /*
     string debug_str="";
     foreach(Decl d; decls)
     {
         debug_str ~= 
-                //format("#[%s][%s][%s]\n", d.name, d.ret, d.args);
-                format("alias da_%s = %s function(%s) nothrow;", d.name, d.ret, d.args);
+                format("#[%s][%s][%s]\n", d.name, d.ret, d.args);
+                //format("alias da_%s = %s function(%s) nothrow;", d.name, d.ret, d.args);
     }
-    assert(0, debug_str);
-    */
+    //assert(0, debug_str);
 
     return decls[0..15] ~ decls_manual;
 }
