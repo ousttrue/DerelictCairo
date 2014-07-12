@@ -12,6 +12,9 @@
     "importPaths": [
         "source/"
     ],
+    "stringImportPaths": [
+        "source/derelict/cairo/"
+    ],
     "license": "Boost",
     "configurations": [
         {
