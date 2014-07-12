@@ -498,7 +498,6 @@ Decl[] toDecls(string src)
 Decl[] decls()
 {
     Decl[] decls_manual=[
-            Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
             Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
             ];
 
@@ -532,6 +531,7 @@ Decl[] decls()
         //~ toDecls(import("cairo_freetype_fonts.h"))
         ~ toDecls(import("cairo_device.h"))
         ~ toDecls(import("cairo_surface.h"))
+        ~ toDecls(import("cairo_image_surface.h"))
         ;
 }
 
