@@ -30,6 +30,7 @@ import std.string;
 import std.array;
 import std.algorithm;
 import std.stdio;
+import std.regex;
 
 
 private {
@@ -337,6 +338,24 @@ string[] ctSplit(string src, char delimiter)
         src=src[index+1 .. $];
     }
     return splited;
+}
+
+
+/*
+string replaceUnsigned(string src)
+{
+    src=src.replaceAll(regex(r"unsigned\s+int"), "uint");
+    src=src.replaceAll(regex(r"unsigned\s+long"), "long");
+
+    return src;
+}
+*/
+
+
+Decl[] toDecls(string src)
+{
+    return src.ctSplit(';').filter!(
+            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
 }
 
 
@@ -675,14 +694,10 @@ void *              cairo_pattern_get_user_data         (cairo_pattern_t *patter
                                                          const cairo_user_data_key_t *key);
     ";
 
-    Decl[] cairo_t_delcs=cairo_t_src.ctSplit(';').filter!(
-            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
 
-    Decl[] cairo_path_decls=cairo_path_src.ctSplit(';').filter!(
-            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
-
-    Decl[] cairo_pattern_decls=cairo_pattern_src.ctSplit(';').filter!(
-            s => s.indexOf("(")!=-1).map!(s => toDecl(s.strip())).array();
+    auto cairo_t_delcs=toDecls(cairo_t_src);
+    auto cairo_path_decls=toDecls(cairo_path_src);
+    auto cairo_pattern_decls=toDecls(cairo_pattern_src);
 
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
