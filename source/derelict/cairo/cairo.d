@@ -111,8 +111,30 @@ struct cairo_text_extents_t {
 };
 
 
-// http://cairographics.org/manual/cairo-text.html
+// cairo font options
 class cairo_font_options_t{}
+enum cairo_subpixel_order_t {
+    CAIRO_SUBPIXEL_ORDER_DEFAULT,
+    CAIRO_SUBPIXEL_ORDER_RGB,
+    CAIRO_SUBPIXEL_ORDER_BGR,
+    CAIRO_SUBPIXEL_ORDER_VRGB,
+    CAIRO_SUBPIXEL_ORDER_VBGR
+};
+enum cairo_hint_style_t {
+    CAIRO_HINT_STYLE_DEFAULT,
+    CAIRO_HINT_STYLE_NONE,
+    CAIRO_HINT_STYLE_SLIGHT,
+    CAIRO_HINT_STYLE_MEDIUM,
+    CAIRO_HINT_STYLE_FULL
+};
+enum cairo_hint_metrics_t {
+    CAIRO_HINT_METRICS_DEFAULT,
+    CAIRO_HINT_METRICS_OFF,
+    CAIRO_HINT_METRICS_ON
+};
+
+
+// http://cairographics.org/manual/cairo-text.html
 struct cairo_glyph_t {
     //unsigned int index;
     ulong        index;
@@ -458,6 +480,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_raster_sources.h"))
         ~ toDecls(import("cairo_font_face.h"))
         ~ toDecls(import("cairo_scaled_font.h"))
+        ~ toDecls(import("cairo_font_options.h"))
         ;
 }
 
