@@ -82,7 +82,7 @@ union cairo_path_data_t {
 
 
 // font face
-class cairo_font_face_t{}
+struct cairo_font_face_t;
 enum cairo_font_type_t {
     CAIRO_FONT_TYPE_TOY,
     CAIRO_FONT_TYPE_FT,
@@ -93,7 +93,7 @@ enum cairo_font_type_t {
 
 
 // scaled font
-class cairo_scaled_font_t{}
+struct cairo_scaled_font_t;
 struct cairo_font_extents_t {
     double ascent;
     double descent;
@@ -112,7 +112,7 @@ struct cairo_text_extents_t {
 
 
 // cairo font options
-class cairo_font_options_t{}
+struct cairo_font_options_t;
 enum cairo_subpixel_order_t {
     CAIRO_SUBPIXEL_ORDER_DEFAULT,
     CAIRO_SUBPIXEL_ORDER_RGB,
@@ -184,7 +184,7 @@ alias void function (cairo_pattern_t *, void *)
 
 
 // http://cairographics.org/manual/cairo-cairo-t.html
-class cairo_t{}
+struct cairo_t;
 enum cairo_antialias_t {
     CAIRO_ANTIALIAS_DEFAULT,
 
@@ -271,7 +271,7 @@ enum cairo_format_t {
 
 
 // http://cairographics.org/manual/cairo-cairo-pattern-t.html
-class cairo_pattern_t{}
+struct cairo_pattern_t;
 enum cairo_extend_t {
     CAIRO_EXTEND_NONE,
     CAIRO_EXTEND_REPEAT,
@@ -297,7 +297,7 @@ enum cairo_pattern_type_t {
 
 
 // http://cairographics.org/manual/cairo-Regions.html
-class cairo_region_t{}
+struct cairo_region_t;
 struct cairo_rectangle_int_t {
     int x, y;
     int width, height;
@@ -311,7 +311,33 @@ enum  cairo_region_overlap_t {
 
 // http://cairographics.org/manual/cairo-cairo-surface-t.html
 class cairo_surface_t{}
-
+enum cairo_surface_type_t {
+    CAIRO_SURFACE_TYPE_IMAGE,
+    CAIRO_SURFACE_TYPE_PDF,
+    CAIRO_SURFACE_TYPE_PS,
+    CAIRO_SURFACE_TYPE_XLIB,
+    CAIRO_SURFACE_TYPE_XCB,
+    CAIRO_SURFACE_TYPE_GLITZ,
+    CAIRO_SURFACE_TYPE_QUARTZ,
+    CAIRO_SURFACE_TYPE_WIN32,
+    CAIRO_SURFACE_TYPE_BEOS,
+    CAIRO_SURFACE_TYPE_DIRECTFB,
+    CAIRO_SURFACE_TYPE_SVG,
+    CAIRO_SURFACE_TYPE_OS2,
+    CAIRO_SURFACE_TYPE_WIN32_PRINTING,
+    CAIRO_SURFACE_TYPE_QUARTZ_IMAGE,
+    CAIRO_SURFACE_TYPE_SCRIPT,
+    CAIRO_SURFACE_TYPE_QT,
+    CAIRO_SURFACE_TYPE_RECORDING,
+    CAIRO_SURFACE_TYPE_VG,
+    CAIRO_SURFACE_TYPE_GL,
+    CAIRO_SURFACE_TYPE_DRM,
+    CAIRO_SURFACE_TYPE_TEE,
+    CAIRO_SURFACE_TYPE_XML,
+    CAIRO_SURFACE_TYPE_SKIA,
+    CAIRO_SURFACE_TYPE_SUBSURFACE,
+    CAIRO_SURFACE_TYPE_COGL
+};
 enum cairo_content_t {
     CAIRO_CONTENT_COLOR		= 0x1000,
     CAIRO_CONTENT_ALPHA		= 0x2000,
@@ -474,7 +500,6 @@ Decl[] decls()
     Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
             Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
-            Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
             ];
 
     /*
@@ -506,6 +531,7 @@ Decl[] decls()
         ~ toDecls(import("cairo_font_options.h"))
         //~ toDecls(import("cairo_freetype_fonts.h"))
         ~ toDecls(import("cairo_device.h"))
+        ~ toDecls(import("cairo_surface.h"))
         ;
 }
 
