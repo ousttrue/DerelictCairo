@@ -29,6 +29,7 @@ module derelict.cairo.cairo;
 import std.string;
 import std.array;
 import std.algorithm;
+import std.stdio;
 
 
 private {
@@ -48,8 +49,70 @@ private {
 }
 
 
-class cairo_surface_t{}
+// http://cairographics.org/manual/cairo-cairo-t.html
 class cairo_t{}
+enum cairo_antialias_t {
+    CAIRO_ANTIALIAS_DEFAULT,
+
+    /* method */
+    CAIRO_ANTIALIAS_NONE,
+    CAIRO_ANTIALIAS_GRAY,
+    CAIRO_ANTIALIAS_SUBPIXEL,
+
+    /* hints */
+    CAIRO_ANTIALIAS_FAST,
+    CAIRO_ANTIALIAS_GOOD,
+    CAIRO_ANTIALIAS_BEST
+};
+enum cairo_fill_rule_t {
+    CAIRO_FILL_RULE_WINDING,
+    CAIRO_FILL_RULE_EVEN_ODD
+};
+enum cairo_line_cap_t {
+    CAIRO_LINE_CAP_BUTT,
+    CAIRO_LINE_CAP_ROUND,
+    CAIRO_LINE_CAP_SQUARE
+};
+enum cairo_line_join_t {
+    CAIRO_LINE_JOIN_MITER,
+    CAIRO_LINE_JOIN_ROUND,
+    CAIRO_LINE_JOIN_BEVEL
+};
+enum cairo_operator_t {
+    CAIRO_OPERATOR_CLEAR,
+
+    CAIRO_OPERATOR_SOURCE,
+    CAIRO_OPERATOR_OVER,
+    CAIRO_OPERATOR_IN,
+    CAIRO_OPERATOR_OUT,
+    CAIRO_OPERATOR_ATOP,
+
+    CAIRO_OPERATOR_DEST,
+    CAIRO_OPERATOR_DEST_OVER,
+    CAIRO_OPERATOR_DEST_IN,
+    CAIRO_OPERATOR_DEST_OUT,
+    CAIRO_OPERATOR_DEST_ATOP,
+
+    CAIRO_OPERATOR_XOR,
+    CAIRO_OPERATOR_ADD,
+    CAIRO_OPERATOR_SATURATE,
+
+    CAIRO_OPERATOR_MULTIPLY,
+    CAIRO_OPERATOR_SCREEN,
+    CAIRO_OPERATOR_OVERLAY,
+    CAIRO_OPERATOR_DARKEN,
+    CAIRO_OPERATOR_LIGHTEN,
+    CAIRO_OPERATOR_COLOR_DODGE,
+    CAIRO_OPERATOR_COLOR_BURN,
+    CAIRO_OPERATOR_HARD_LIGHT,
+    CAIRO_OPERATOR_SOFT_LIGHT,
+    CAIRO_OPERATOR_DIFFERENCE,
+    CAIRO_OPERATOR_EXCLUSION,
+    CAIRO_OPERATOR_HSL_HUE,
+    CAIRO_OPERATOR_HSL_SATURATION,
+    CAIRO_OPERATOR_HSL_COLOR,
+    CAIRO_OPERATOR_HSL_LUMINOSITY
+};
 
 
 enum cairo_format_t {
@@ -61,6 +124,20 @@ enum cairo_format_t {
     CAIRO_FORMAT_RGB16_565 = 4,
     CAIRO_FORMAT_RGB30     = 5
 }
+
+
+// http://cairographics.org/manual/cairo-cairo-pattern-t.html
+class cairo_pattern_t{}
+
+
+// http://cairographics.org/manual/cairo-cairo-surface-t.html
+class cairo_surface_t{}
+
+enum cairo_content_t {
+    CAIRO_CONTENT_COLOR		= 0x1000,
+    CAIRO_CONTENT_ALPHA		= 0x2000,
+    CAIRO_CONTENT_COLOR_ALPHA = 0x3000
+};
 
 
 enum cairo_font_slant_t {
@@ -76,6 +153,52 @@ enum cairo_font_weight_t {
 }
 
 
+// http://cairographics.org/manual/cairo-Error-handling.html
+enum cairo_status_t  {
+    CAIRO_STATUS_SUCCESS = 0,
+
+    CAIRO_STATUS_NO_MEMORY,
+    CAIRO_STATUS_INVALID_RESTORE,
+    CAIRO_STATUS_INVALID_POP_GROUP,
+    CAIRO_STATUS_NO_CURRENT_POINT,
+    CAIRO_STATUS_INVALID_MATRIX,
+    CAIRO_STATUS_INVALID_STATUS,
+    CAIRO_STATUS_NULL_POINTER,
+    CAIRO_STATUS_INVALID_STRING,
+    CAIRO_STATUS_INVALID_PATH_DATA,
+    CAIRO_STATUS_READ_ERROR,
+    CAIRO_STATUS_WRITE_ERROR,
+    CAIRO_STATUS_SURFACE_FINISHED,
+    CAIRO_STATUS_SURFACE_TYPE_MISMATCH,
+    CAIRO_STATUS_PATTERN_TYPE_MISMATCH,
+    CAIRO_STATUS_INVALID_CONTENT,
+    CAIRO_STATUS_INVALID_FORMAT,
+    CAIRO_STATUS_INVALID_VISUAL,
+    CAIRO_STATUS_FILE_NOT_FOUND,
+    CAIRO_STATUS_INVALID_DASH,
+    CAIRO_STATUS_INVALID_DSC_COMMENT,
+    CAIRO_STATUS_INVALID_INDEX,
+    CAIRO_STATUS_CLIP_NOT_REPRESENTABLE,
+    CAIRO_STATUS_TEMP_FILE_ERROR,
+    CAIRO_STATUS_INVALID_STRIDE,
+    CAIRO_STATUS_FONT_TYPE_MISMATCH,
+    CAIRO_STATUS_USER_FONT_IMMUTABLE,
+    CAIRO_STATUS_USER_FONT_ERROR,
+    CAIRO_STATUS_NEGATIVE_COUNT,
+    CAIRO_STATUS_INVALID_CLUSTERS,
+    CAIRO_STATUS_INVALID_SLANT,
+    CAIRO_STATUS_INVALID_WEIGHT,
+    CAIRO_STATUS_INVALID_SIZE,
+    CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED,
+    CAIRO_STATUS_DEVICE_TYPE_MISMATCH,
+    CAIRO_STATUS_DEVICE_ERROR,
+    CAIRO_STATUS_INVALID_MESH_CONSTRUCTION,
+    CAIRO_STATUS_DEVICE_FINISHED,
+
+    CAIRO_STATUS_LAST_STATUS
+};
+
+
 private struct Decl{
     string name;
     string ret;
@@ -83,29 +206,232 @@ private struct Decl{
 }
 
 
-static immutable auto decls=[
+string remove_a_symbol(string arg)
+{
+    arg=arg.strip();
+    while(true)
+    {
+        auto last=arg[$-1];
+        if(!std.ascii.isAlphaNum(last) && last!='_'){
+            break;
+        }
+        arg=arg[0 .. $-1];
+    }
+    return arg;
+}
+
+string remove_symbol(string args)
+{
+    if(args.strip()==""){
+        return "";
+    }
+
+    string[] splited=[];
+    while(true)
+    {
+        auto index=args.indexOf(",");
+        if(index==-1){
+            splited~=remove_a_symbol(args);
+            break;
+        }
+        splited~=remove_a_symbol(args[0..index]);
+        args=args[index+1..$].strip();
+    }
+    auto removed=splited.join(", ");
+    return removed;
+}
+
+
+Decl toDecl(string src)
+{
+    auto open=src.indexOf('(');
+    auto close=src.lastIndexOf(')');
+    auto args=src[open+1..close];
+
+    auto return_name=src[0..open];
+    return_name=return_name.stripRight();
+    auto name_begin=return_name.lastIndexOf(' ');
+    auto name=return_name[name_begin+1..$];
+    auto ret=return_name[0..name_begin].strip();
+
+    return Decl(name, ret, remove_symbol(args));
+}
+
+
+Decl[] decls()
+{
+    // from http://cairographics.org/manual/cairo-cairo-t.html
+    string cairo_t_src="
+typedef             cairo_t;
+cairo_t *           cairo_create                        (cairo_surface_t *target);
+cairo_t *           cairo_reference                     (cairo_t *cr);
+void                cairo_destroy                       (cairo_t *cr);
+cairo_status_t      cairo_status                        (cairo_t *cr);
+void                cairo_save                          (cairo_t *cr);
+void                cairo_restore                       (cairo_t *cr);
+cairo_surface_t *   cairo_get_target                    (cairo_t *cr);
+void                cairo_push_group                    (cairo_t *cr);
+void                cairo_push_group_with_content       (cairo_t *cr,
+                                                         cairo_content_t content);
+cairo_pattern_t *   cairo_pop_group                     (cairo_t *cr);
+void                cairo_pop_group_to_source           (cairo_t *cr);
+cairo_surface_t *   cairo_get_group_target              (cairo_t *cr);
+void                cairo_set_source_rgb                (cairo_t *cr,
+                                                         double red,
+                                                         double green,
+                                                         double blue);
+void                cairo_set_source_rgba               (cairo_t *cr,
+                                                         double red,
+                                                         double green,
+                                                         double blue,
+                                                         double alpha);
+void                cairo_set_source                    (cairo_t *cr,
+                                                         cairo_pattern_t *source);
+void                cairo_set_source_surface            (cairo_t *cr,
+                                                         cairo_surface_t *surface,
+                                                         double x,
+                                                         double y);
+cairo_pattern_t *   cairo_get_source                    (cairo_t *cr);
+enum                cairo_antialias_t;
+void                cairo_set_antialias                 (cairo_t *cr,
+                                                         cairo_antialias_t antialias);
+cairo_antialias_t   cairo_get_antialias                 (cairo_t *cr);
+void                cairo_set_dash                      (cairo_t *cr,
+                                                         const double *dashes,
+                                                         int num_dashes,
+                                                         double offset);
+int                 cairo_get_dash_count                (cairo_t *cr);
+void                cairo_get_dash                      (cairo_t *cr,
+                                                         double *dashes,
+                                                         double *offset);
+enum                cairo_fill_rule_t;
+void                cairo_set_fill_rule                 (cairo_t *cr,
+                                                         cairo_fill_rule_t fill_rule);
+cairo_fill_rule_t   cairo_get_fill_rule                 (cairo_t *cr);
+enum                cairo_line_cap_t;
+void                cairo_set_line_cap                  (cairo_t *cr,
+                                                         cairo_line_cap_t line_cap);
+cairo_line_cap_t    cairo_get_line_cap                  (cairo_t *cr);
+enum                cairo_line_join_t;
+void                cairo_set_line_join                 (cairo_t *cr,
+                                                         cairo_line_join_t line_join);
+cairo_line_join_t   cairo_get_line_join                 (cairo_t *cr);
+void                cairo_set_line_width                (cairo_t *cr,
+                                                         double width);
+double              cairo_get_line_width                (cairo_t *cr);
+void                cairo_set_miter_limit               (cairo_t *cr,
+                                                         double limit);
+double              cairo_get_miter_limit               (cairo_t *cr);
+enum                cairo_operator_t;
+void                cairo_set_operator                  (cairo_t *cr,
+                                                         cairo_operator_t op);
+cairo_operator_t    cairo_get_operator                  (cairo_t *cr);
+void                cairo_set_tolerance                 (cairo_t *cr,
+                                                         double tolerance);
+double              cairo_get_tolerance                 (cairo_t *cr);
+void                cairo_clip                          (cairo_t *cr);
+void                cairo_clip_preserve                 (cairo_t *cr);
+void                cairo_clip_extents                  (cairo_t *cr,
+                                                         double *x1,
+                                                         double *y1,
+                                                         double *x2,
+                                                         double *y2);
+cairo_bool_t        cairo_in_clip                       (cairo_t *cr,
+                                                         double x,
+                                                         double y);
+void                cairo_reset_clip                    (cairo_t *cr);
+                    cairo_rectangle_t;
+                    cairo_rectangle_list_t;
+void                cairo_rectangle_list_destroy        (cairo_rectangle_list_t *rectangle_list);
+cairo_rectangle_list_t * cairo_copy_clip_rectangle_list (cairo_t *cr);
+void                cairo_fill                          (cairo_t *cr);
+void                cairo_fill_preserve                 (cairo_t *cr);
+void                cairo_fill_extents                  (cairo_t *cr,
+                                                         double *x1,
+                                                         double *y1,
+                                                         double *x2,
+                                                         double *y2);
+cairo_bool_t        cairo_in_fill                       (cairo_t *cr,
+                                                         double x,
+                                                         double y);
+void                cairo_mask                          (cairo_t *cr,
+                                                         cairo_pattern_t *pattern);
+void                cairo_mask_surface                  (cairo_t *cr,
+                                                         cairo_surface_t *surface,
+                                                         double surface_x,
+                                                         double surface_y);
+void                cairo_paint                         (cairo_t *cr);
+void                cairo_paint_with_alpha              (cairo_t *cr,
+                                                         double alpha);
+void                cairo_stroke                        (cairo_t *cr);
+void                cairo_stroke_preserve               (cairo_t *cr);
+void                cairo_stroke_extents                (cairo_t *cr,
+                                                         double *x1,
+                                                         double *y1,
+                                                         double *x2,
+                                                         double *y2);
+cairo_bool_t        cairo_in_stroke                     (cairo_t *cr,
+                                                         double x,
+                                                         double y);
+void                cairo_copy_page                     (cairo_t *cr);
+void                cairo_show_page                     (cairo_t *cr);
+unsigned int        cairo_get_reference_count           (cairo_t *cr);
+cairo_status_t      cairo_set_user_data                 (cairo_t *cr,
+                                                         const cairo_user_data_key_t *key,
+                                                         void *user_data,
+                                                         cairo_destroy_func_t destroy);
+void *              cairo_get_user_data                 (cairo_t *cr,
+                                                         const cairo_user_data_key_t *key);
+";
+
+    Decl[] decls=[];
+    while(true)
+    {
+        auto index=cairo_t_src.indexOf(';');
+        if(index==-1){
+            break;
+        }
+        auto decl=cairo_t_src[0 .. index];
+        if(decl.indexOf('(')!=-1){
+            decls ~= toDecl(decl);
+        }
+        cairo_t_src=cairo_t_src[index+1 .. $].strip();
+    }
+
+    Decl[] decls_manual=[
             Decl("cairo_image_surface_create", "cairo_surface_t*", "cairo_format_t, int, int"),
-            Decl("cairo_create", "cairo_t*", "cairo_surface_t*"),
-            Decl("cairo_set_source_rgb", "void", "cairo_t*, double, double, double"),
             Decl("cairo_select_font_face", "void", "cairo_t*, const char*, cairo_font_slant_t, cairo_font_weight_t"),
             Decl("cairo_set_font_size", "void", "cairo_t*, double"),
             Decl("cairo_move_to", "void", "cairo_t*, double, double"),
             Decl("cairo_show_text", "void", "cairo_t*, const char*"),
             Decl("cairo_surface_write_to_png", "void", "cairo_surface_t*, const char*"),
-            Decl("cairo_destroy", "void", "cairo_t*"),
             Decl("cairo_surface_destroy", "void", "cairo_surface_t*"),
             ];
 
+    /*
+    string debug_str="";
+    foreach(Decl d; decls)
+    {
+        debug_str ~= 
+                //format("#[%s][%s][%s]\n", d.name, d.ret, d.args);
+                format("alias da_%s = %s function(%s) nothrow;", d.name, d.ret, d.args);
+    }
+    assert(0, debug_str);
+    */
+
+    return decls[0..15] ~ decls_manual;
+}
+
 
 extern( C ) {
-    mixin(decls.map!(d => 
+    mixin(decls().map!(d => 
                 format("alias da_%s = %s function(%s) nothrow;", d.name, d.ret, d.args)
                 ).join());
 }
 
 
 __gshared {
-    mixin(decls.map!(d => 
+    mixin(decls().map!(d => 
                 format("da_%s %s;", d.name, d.name)
                 ).join());
 }
@@ -116,7 +442,7 @@ class DerelictCairoLoader : SharedLibLoader {
         super( libNames );
     }
     protected override void loadSymbols() {
-        mixin(decls.map!(d => 
+        mixin(decls().map!(d => 
                     format("bindFunc(cast(void**)&%s, \"%s\");", d.name, d.name)
                     ).join());
     }
